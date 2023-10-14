@@ -11,7 +11,7 @@
 
 
 
-static void MX_SPI1_Init(void);
+static void SPI1_Init(void);
 static void DisplayIO(void);
 static void LCDCursor(int positionX, int positionY);
 static void LCDInit(void);
@@ -20,17 +20,23 @@ static void LCDInit(void);
 SPI_HandleTypeDef hspi1;
 
 
+/** @brief displayInit initialize display
+ *  @return void
+**/
 void displayInit(void)
 {
   DisplayIO();
-  MX_SPI1_Init();
+  SPI1_Init();
   HAL_GPIO_WritePin(GPIOA,RST,GPIO_PIN_SET); // Reset is HIGH for data flow
   LCDInit();  
 }
 
 
 
-
+/** @brief Print character 
+ *  @param character is char to be printed
+ *   @return character
+**/
 int Putch(char character)
 {
  
@@ -42,6 +48,12 @@ return character;
 
 
 
+/** @brief Print string using X,Y position
+ *  @param str is string to be printed
+ *  @param X_Pos is x position ( 0 to 83 )
+ *  @param Y_Pos is y position ( 0 to 5 )
+    @return *str
+**/
 int lcdPrint(char *str,int X_Pos, int Y_Pos)
 {
   LCDCursor(X_Pos,Y_Pos);
@@ -54,13 +66,33 @@ return *str;
 
 
 
+/** @brief printImage prints array named github in font.h
+ *  @return void
+**/
+void printImage(void)
+{
+  LCDCursor(0,0);
+  const int SIZE_BIT = (sizeof(Github)/sizeof(char));
+  for(int i = 0; i< SIZE_BIT; i++)
+  {
+    sendData(Github[i]);
+  }
+}
+
+
+
+/** @brief lcdInverse inverse colors
+  * @return void
+**/
 void lcdInverse(void)
 {
    sendCommand(0x0D);
 }
 
 
-
+/** @brief lcdNonInverse inverts the color of the screen
+  * @return void
+**/
 void lcdNonInverse(void)
 {
    sendCommand(0x0C);
@@ -68,20 +100,25 @@ void lcdNonInverse(void)
 
 
 
-
+/** @brief sendData sends data to LCD 
+  * @param Data is parameter to be send to LCD
+  * @return void
+**/
 void sendData(uint8_t Data)
 {
   HAL_GPIO_WritePin(GPIOA,CE,GPIO_PIN_RESET);  // CE is LOW to sending DATA
   HAL_GPIO_WritePin(GPIOA,DC,GPIO_PIN_SET);// DC = 1 Data MODE
   HAL_SPI_Transmit(&hspi1,&Data, 1, 100);// 5 Byte will be send
   HAL_GPIO_WritePin(GPIOA,CE,GPIO_PIN_SET); 
-  
-  
 }
 
 
 
 
+/** @brief sendCommand sends command to LCD 
+  * @param Data is parameter to be send to LCD
+  * @return void
+**/
 int sendCommand(uint8_t Data)
 {
   HAL_GPIO_WritePin(GPIOA,CE,GPIO_PIN_RESET);  // CE is LOW to sending COMMAND
@@ -97,7 +134,9 @@ int sendCommand(uint8_t Data)
 
 
 
-
+/** @brief LCDClear clear the scren
+ *  @return void
+**/
 void LCDClear(){
   for(int i = 0; i < 504; i++){
     sendData(0x00);
@@ -106,7 +145,11 @@ void LCDClear(){
 
 
 
-
+/** @brief LCDCursor adjust cursor
+  * @param positionX, set X poisiton
+  * @param positionY, set Y position
+  * @return void
+**/
 static void LCDCursor(int positionX, int positionY)
 {
   sendCommand(0x80 | positionX);
@@ -114,7 +157,9 @@ static void LCDCursor(int positionX, int positionY)
 }
 
 
-
+/** @brief LCDInit, initialize  LCD
+  * @return void
+**/
 static void LCDInit(void)
 {
     sendCommand(0x21);
@@ -127,7 +172,9 @@ static void LCDInit(void)
 }
 
 
-
+/** @brief DisplayIO, initialize display pins 
+  * @return void
+**/
 static void DisplayIO(void)
 {
   HAL_GPIO_WritePin(GPIOA,RST,GPIO_PIN_RESET);
@@ -145,8 +192,10 @@ static void DisplayIO(void)
 }
 
 
-
-static void MX_SPI1_Init(void)
+/** @brief SPI1_Init, initialize spi1
+  * @return void
+**/
+static void SPI1_Init(void)
 {
 
    
